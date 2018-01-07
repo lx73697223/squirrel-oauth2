@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>squirrel-oauth2</artifactId>
+        <groupId>com.pipi</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>squirrel-authorization-server</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.security.oauth</groupId>
+            <artifactId>spring-security-oauth2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bitbucket.b_c</groupId>
+            <artifactId>jose4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- 服务调用客户端 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-feign</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- squirrel begin-->
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-common-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-common-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-common-persistence</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-common-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-common-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-user-account-endpoint-intf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-cloud-starter-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-resource-server-sdk</artifactId>
+        </dependency>
+        <!-- squirrel end-->
+    </dependencies>
+</project>

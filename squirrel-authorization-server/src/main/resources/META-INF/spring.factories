@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.pi.oauth.authserver.config.AuthorizationServerConfiguration,\
+com.pi.oauth.authserver.config.WebSecurityConfiguration
