@@ -34,6 +34,13 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!-- squirrel begin-->
+        <dependency>
+            <groupId>com.pipi</groupId>
+            <artifactId>squirrel-common-utils</artifactId>
+        </dependency>
+        <!-- squirrel end-->
     </dependencies>
 
 </project>
