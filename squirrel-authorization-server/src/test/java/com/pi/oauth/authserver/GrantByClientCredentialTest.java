@@ -1,103 +1,95 @@
 package com.pi.oauth.authserver;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pi.common.utils.constants.GeneralConstants;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtContext;
 import org.json.JSONException;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.jwt.JwtHelper;
-import org.springframework.web.client.ResourceAccessException;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class GrantByClientCredentialTest extends OAuth2Test {
 
-    @Value("${local.server.port}")
-    private int port;
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
-    public void getJwtTokenByTrustedClient()
-            throws JsonParseException, JsonMappingException, IOException, JSONException {
+    public void getJwtTokenByTrustedClient() throws IOException, JSONException {
 
-        ResponseEntity<String> response = new TestRestTemplate("trusted-app", "secret")
-                                                  .postForEntity("http://localhost:" + port +
-                                                                 "/oauth/token?client_id=trusted-app&grant_type=client_credentials",
-                                                                 null, String.class);
+        final String ClientId = "trusted-app";
+        final String ClientSecret = "secret";
+
+        TestRestTemplate clientAndSecretTestRestTemplate = testRestTemplate.withBasicAuth(ClientId, ClientSecret);
+
+        // 获取 token
+        ResponseEntity<String> response = clientAndSecretTestRestTemplate.postForEntity(
+                "/oauth/token?client_id=trusted-app&grant_type=client_credentials", null, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
         String responseText = response.getBody();
-        assertEquals(HttpStatus.OK, response.getStatusCode());
         HashMap jwtMap = new ObjectMapper().readValue(responseText, HashMap.class);
+        assertThat(jwtMap.get("token_type")).isEqualTo("bearer");
+        assertThat(jwtMap.get("scope")).isEqualTo("read write");
+        assertThat(jwtMap.containsKey("access_token")).isTrue();
+        assertThat(jwtMap.containsKey("expires_in")).isTrue();
+        assertThat(jwtMap.containsKey("jti")).isTrue();
 
-        assertEquals("bearer", jwtMap.get("token_type"));
-        assertEquals("read write", jwtMap.get("scope"));
-        assertTrue(jwtMap.containsKey("access_token"));
-        assertTrue(jwtMap.containsKey("expires_in"));
-        assertTrue(jwtMap.containsKey("jti"));
         String accessToken = (String) jwtMap.get("access_token");
-
         Jwt jwtToken = JwtHelper.decode(accessToken);
-
         String claims = jwtToken.getClaims();
-        logJson(claims);
+        LOGGER.info(claims);
 
         HashMap claimsMap = new ObjectMapper().readValue(claims, HashMap.class);
-        assertEquals("spring-boot-application", ((List<String>) claimsMap.get("aud")).get(0));
-        assertEquals("trusted-app", claimsMap.get("client_id"));
-        assertEquals("read", ((List<String>) claimsMap.get("scope")).get(0));
-        assertEquals("write", ((List<String>) claimsMap.get("scope")).get(1));
+        assertThat(((List<String>) claimsMap.get("aud")).get(0)).isEqualTo("spring-boot-application");
+        assertThat(claimsMap.get("client_id")).isEqualTo(ClientId);
+        assertThat(((List<String>) claimsMap.get("scope")).get(0)).isEqualTo("read");
+        assertThat(((List<String>) claimsMap.get("scope")).get(1)).isEqualTo("write");
+
         List<String> authorities = (List<String>) claimsMap.get("authorities");
-        assertEquals(1, authorities.size());
-        assertEquals("ROLE_TRUSTED_CLIENT", authorities.get(0));
+        assertThat(authorities).hasSize(1);
+        assertThat(authorities.get(0)).isEqualTo("ROLE_TRUSTED_CLIENT");
     }
 
     @Test
-    public void accessProtectedResourceByJwtToken()
-            throws JsonParseException, JsonMappingException, IOException, InvalidJwtException, JSONException {
-        ResponseEntity<String> response = new TestRestTemplate().getForEntity(
-                "http://localhost:" + port + "/resources/client", String.class);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    public void accessProtectedResourceByJwtToken() throws IOException, InvalidJwtException, JSONException {
 
-        response = new TestRestTemplate("trusted-app", "secret").postForEntity(
-                "http://localhost:" + port +
-                "/oauth/token?client_id=trusted-app&grant_type=client_credentials", null,
-                String.class);
+        final String ClientId = "trusted-app";
+        final String ClientSecret = "secret";
+
+        ResponseEntity<String> response = testRestTemplate.getForEntity("/resources/client", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        TestRestTemplate clientAndSecretTestRestTemplate = testRestTemplate.withBasicAuth(ClientId, ClientSecret);
+        response = clientAndSecretTestRestTemplate.postForEntity(
+                "/oauth/token?client_id=trusted-app&grant_type=client_credentials", null, String.class);
         String responseText = response.getBody();
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
         HashMap jwtMap = new ObjectMapper().readValue(responseText, HashMap.class);
         String accessToken = (String) jwtMap.get("access_token");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-
         JwtContext jwtContext = jwtConsumer.process(accessToken);
         logJWTClaims(jwtContext);
 
-        response = new TestRestTemplate().exchange(
-                "http://localhost:" + port + "/resources/principal", HttpMethod.GET,
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(GeneralConstants.Authorization_Header, GeneralConstants.Authorization_Token_Prefix + accessToken);
+
+        response = testRestTemplate.exchange("/resources/principal", HttpMethod.GET, new HttpEntity<>(null, headers),
+                String.class);
+        assertThat(response.getBody()).isEqualTo("trusted-app");
+
+        response = testRestTemplate.exchange("/resources/trusted_client", HttpMethod.GET,
                 new HttpEntity<>(null, headers), String.class);
-        assertEquals("trusted-app", response.getBody());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        response = new TestRestTemplate().exchange(
-                "http://localhost:" + port + "/resources/trusted_client", HttpMethod.GET,
-                new HttpEntity<>(null, headers), String.class);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-
-        response = new TestRestTemplate().exchange("http://localhost:" + port + "/resources/roles",
-                                                   HttpMethod.GET, new HttpEntity<>(null, headers),
-                                                   String.class);
-        assertEquals("[{\"authority\":\"ROLE_TRUSTED_CLIENT\"}]", response.getBody());
-
+        response = testRestTemplate.exchange("/resources/roles", HttpMethod.GET, new HttpEntity<>(null, headers),
+                String.class);
+        assertThat(response.getBody()).isEqualTo("[{\"authority\":\"ROLE_TRUSTED_CLIENT\"}]");
     }
 
 }
