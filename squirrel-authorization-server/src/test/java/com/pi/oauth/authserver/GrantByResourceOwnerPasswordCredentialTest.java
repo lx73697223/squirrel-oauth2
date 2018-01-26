@@ -115,7 +115,7 @@ public class GrantByResourceOwnerPasswordCredentialTest extends OAuth2Test {
         String accessToken = (String) jwtMap.get("access_token");
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set(GeneralConstants.Authorization_Header, GeneralConstants.Authorization_Token_Prefix + accessToken);
+        headers.set(GeneralConstants.AUTHORIZATION_HEADER, GeneralConstants.AUTHORIZATION_TOKEN_PREFIX + accessToken);
 
         response = testRestTemplate.exchange("/resources/user", HttpMethod.GET, new HttpEntity<>(null, headers),
                 String.class);
@@ -152,7 +152,7 @@ public class GrantByResourceOwnerPasswordCredentialTest extends OAuth2Test {
         String accessToken = (String) jwtMap.get("access_token");
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set(GeneralConstants.Authorization_Header, GeneralConstants.Authorization_Token_Prefix + accessToken);
+        headers.set(GeneralConstants.AUTHORIZATION_HEADER, GeneralConstants.AUTHORIZATION_TOKEN_PREFIX + accessToken);
 
         response = testRestTemplate.exchange("/resources/admin", HttpMethod.GET, new HttpEntity<>(null, headers),
                 String.class);

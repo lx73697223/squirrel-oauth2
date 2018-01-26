@@ -77,7 +77,7 @@ public class GrantByClientCredentialTest extends OAuth2Test {
         logJWTClaims(jwtContext);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set(GeneralConstants.Authorization_Header, GeneralConstants.Authorization_Token_Prefix + accessToken);
+        headers.set(GeneralConstants.AUTHORIZATION_HEADER, GeneralConstants.AUTHORIZATION_TOKEN_PREFIX + accessToken);
 
         response = testRestTemplate.exchange("/resources/principal", HttpMethod.GET, new HttpEntity<>(null, headers),
                 String.class);

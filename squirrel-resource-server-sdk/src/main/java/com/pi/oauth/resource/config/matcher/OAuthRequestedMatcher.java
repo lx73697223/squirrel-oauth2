@@ -9,10 +9,10 @@ public class OAuthRequestedMatcher implements RequestMatcher {
 
     @Override
     public boolean matches(HttpServletRequest request) {
-        String auth = request.getHeader(GeneralConstants.Authorization_Header);
+        String auth = request.getHeader(GeneralConstants.AUTHORIZATION_HEADER);
         // Determine if the client request contained an OAuth Authorization
         boolean haveOauth2Token = (auth != null) && auth.startsWith(
-                GeneralConstants.Authorization_Token_Prefix);
+                GeneralConstants.AUTHORIZATION_TOKEN_PREFIX);
         boolean haveAccessToken = request.getParameter("access_token") != null;
         return haveOauth2Token || haveAccessToken;
     }

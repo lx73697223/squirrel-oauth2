@@ -79,7 +79,7 @@ public class GrantByAuthorizationCodeProviderTest extends OAuth2Test {
         // 4. 使用 token 请求资源服务
 
         headers = new HttpHeaders();
-        headers.set(GeneralConstants.Authorization_Header, GeneralConstants.Authorization_Token_Prefix + accessToken);
+        headers.set(GeneralConstants.AUTHORIZATION_HEADER, GeneralConstants.AUTHORIZATION_TOKEN_PREFIX + accessToken);
 
         // 访问不在普通用户角色允许访问的资源
         response = testRestTemplate.exchange("/resources/client", HttpMethod.GET, new HttpEntity<>(null, headers),
